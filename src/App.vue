@@ -1,0 +1,57 @@
+<script setup>
+import { ref, onMounted } from "vue";
+
+const currencies = ref([
+  { code: "USD", text: "American Dollar" },
+  { code: "EUR", text: "Euro" },
+  { code: "GBP", text: "Pound" },
+]);
+
+const criptoCoins = ref([]);
+
+onMounted(() => {
+  const url =
+    "https://data-api.coindesk.com/asset/v1/top/list?page=1&page_size=20&sort_by=CIRCULATING_MKT_CAP_USD&sort_direction=DESC&groups=ID,BASIC,SUPPLY,PRICE,MKT_CAP,VOLUME,CHANGE,TOPLIST_RANK&toplist_quote_asset=USD";
+  fetch(url)
+    .then((response) => response.json())
+    .then(({ Data }) => {
+      //destructoring for access to the Data Object
+      criptoCoins.value = Data.LIST;
+      console.log(criptoCoins.value);
+    });
+});
+</script>
+
+<template>
+  <div class="container">
+    <h1 class="title"><span>Cripto Coins</span> Quoter System</h1>
+  </div>
+
+  <div class="content">
+    <form class="form">
+      <div class="field">
+        <label for="currency">Currency:</label>
+        <select id="currency">
+          <option value="">-- Select --</option>
+
+          <option v-for="currency in currencies" :value="currency.code">
+            {{ currency.text }}
+          </option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="criptoCoin">Cripto:</label>
+        <select id="criptoCoin">
+          <option value="">-- Select --</option>
+
+          <option v-for="criptoCoin in criptoCoins" :value="criptoCoin.SYMBOL">
+            {{ criptoCoin.NAME }}
+          </option>
+        </select>
+      </div>
+    </form>
+  </div>
+</template>
+
+<style scoped></style>
