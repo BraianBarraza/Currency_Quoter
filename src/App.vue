@@ -7,7 +7,7 @@ const currencies = ref([
   { code: "GBP", text: "Pound" },
 ]);
 
-const criptoCoins = ref([]);
+const cryptoCoins = ref([]);
 
 onMounted(() => {
   const url =
@@ -16,15 +16,15 @@ onMounted(() => {
     .then((response) => response.json())
     .then(({ Data }) => {
       //destructoring for access to the Data Object
-      criptoCoins.value = Data.LIST;
-      console.log(criptoCoins.value);
+      cryptoCoins.value = Data.LIST;
+      console.log(cryptoCoins.value);
     });
 });
 </script>
 
 <template>
   <div class="container">
-    <h1 class="title"><span>Cripto Coins</span> Quoter System</h1>
+    <h1 class="title"><span>Cryptocurrency</span> Quoter System</h1>
   </div>
 
   <div class="content">
@@ -41,15 +41,17 @@ onMounted(() => {
       </div>
 
       <div class="field">
-        <label for="criptoCoin">Cripto:</label>
-        <select id="criptoCoin">
+        <label for="cryptoCoin">Crypto:</label>
+        <select id="cryptoCoin">
           <option value="">-- Select --</option>
 
-          <option v-for="criptoCoin in criptoCoins" :value="criptoCoin.SYMBOL">
-            {{ criptoCoin.NAME }}
+          <option v-for="cryptoCoin in cryptoCoins" :value="cryptoCoin.SYMBOL">
+            {{ cryptoCoin.NAME }}
           </option>
         </select>
       </div>
+
+      <input type="submit" value="Quote Crypto" />
     </form>
   </div>
 </template>

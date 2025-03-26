@@ -23,7 +23,7 @@ body {
 .title {
   font-size: 3.8rem;
   margin-top: 5rem;
-  line-height: 0.8;
+  line-height: 1;
   color: var(--white);
 }
 .title span {
