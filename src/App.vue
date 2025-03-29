@@ -1,6 +1,7 @@
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import Alert from "./components/Alert.vue";
+import Spinner from "./components/Spinner.vue";
 
 const currencies = ref([
   { code: "USD", text: "American Dollar" },
@@ -8,14 +9,13 @@ const currencies = ref([
   { code: "GBP", text: "Pound" },
 ]);
 const error = ref("");
-
 const cryptocurrencies = ref([]);
 const quote = reactive({
   currency: "",
   cryptocurrency: "",
 });
-
 const quotation = ref({});
+const loading = ref(false);
 
 onMounted(() => {
   const url =
@@ -38,13 +38,27 @@ const quoteCrypto = () => {
 };
 
 const getCryptoQuotation = async () => {
-  const { currency, cryptocurrency } = quote;
-  const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${cryptocurrency}&tsyms=${currency}&sign=true`;
-  const response = await fetch(url);
-  const data = await response.json();
+  loading.value = true;
+  quotation.value = {};
+  try {
+    const { currency, cryptocurrency } = quote;
+    const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${cryptocurrency}&tsyms=${currency}&sign=true`;
+    const response = await fetch(url);
+    const data = await response.json();
 
-  quotation.value = data.DISPLAY[cryptocurrency][currency];
+    quotation.value = data.DISPLAY[cryptocurrency][currency];
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loading.value = false;
+  }
 };
+
+const showResult = computed(() => {
+  console.log(quotation);
+  return Object.values(quotation.value).length > 0;
+});
+console.log(showResult);
 </script>
 
 <template>
@@ -84,7 +98,9 @@ const getCryptoQuotation = async () => {
         <input type="submit" value="Quote Crypto" />
       </form>
 
-      <div v-if="quotation.length > 0" class="result-container">
+      <Spinner v-if="loading" />
+
+      <div v-if="showResult" class="result-container">
         <h2>Quotation</h2>
 
         <div class="result">
