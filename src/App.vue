@@ -1,31 +1,16 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from "vue";
+import {ref, reactive} from "vue";
 import Alert from "./components/Alert.vue";
 import Spinner from "./components/Spinner.vue";
+import useCrypto from "./composable/useCrypto.js";
+import Quote from "./components/Quote.vue";
 
-const currencies = ref([
-  { code: "USD", text: "American Dollar" },
-  { code: "EUR", text: "Euro" },
-  { code: "GBP", text: "Pound" },
-]);
+const {currencies, cryptocurrencies, quotation, loading, getCryptoQuotation, showResult} = useCrypto()
+
 const error = ref("");
-const cryptocurrencies = ref([]);
 const quote = reactive({
   currency: "",
   cryptocurrency: "",
-});
-const quotation = ref({});
-const loading = ref(false);
-
-onMounted(() => {
-  const url =
-    "https://data-api.coindesk.com/asset/v1/top/list?page=1&page_size=20&sort_by=CIRCULATING_MKT_CAP_USD&sort_direction=DESC&groups=ID,BASIC,SUPPLY,PRICE,MKT_CAP,VOLUME,CHANGE,TOPLIST_RANK&toplist_quote_asset=USD";
-  fetch(url)
-    .then((response) => response.json())
-    .then(({ Data }) => {
-      //destructuring for access to the Data Object
-      cryptocurrencies.value = Data.LIST;
-    });
 });
 
 const quoteCrypto = () => {
@@ -34,31 +19,9 @@ const quoteCrypto = () => {
     return;
   }
   error.value = "";
-  getCryptoQuotation();
+  getCryptoQuotation(quote);
 };
 
-const getCryptoQuotation = async () => {
-  loading.value = true;
-  quotation.value = {};
-  try {
-    const { currency, cryptocurrency } = quote;
-    const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${cryptocurrency}&tsyms=${currency}&sign=true`;
-    const response = await fetch(url);
-    const data = await response.json();
-
-    quotation.value = data.DISPLAY[cryptocurrency][currency];
-  } catch (error) {
-    console.log(error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-const showResult = computed(() => {
-  console.log(quotation);
-  return Object.values(quotation.value).length > 0;
-});
-console.log(showResult);
 </script>
 
 <template>
@@ -87,49 +50,24 @@ console.log(showResult);
             <option value="">-- Select --</option>
 
             <option
-              v-for="cryptocurrency in cryptocurrencies"
-              :value="cryptocurrency.SYMBOL"
+                v-for="cryptocurrency in cryptocurrencies"
+                :value="cryptocurrency.SYMBOL"
             >
               {{ cryptocurrency.NAME }}
             </option>
           </select>
         </div>
 
-        <input type="submit" value="Quote Crypto" />
+        <input type="submit" value="Quote Crypto"/>
       </form>
 
-      <Spinner v-if="loading" />
-
-      <div v-if="showResult" class="result-container">
-        <h2>Quotation</h2>
-
-        <div class="result">
-          <img
-            :src="'https://www.cryptocompare.com/' + quotation.IMAGEURL"
-            :alt="'Image Crypto' + quotation.NAME"
-          />
-          <div>
-            <p>
-              Actual Price: <span>{{ quotation.PRICE }}</span>
-            </p>
-            <p>
-              Highest price of the day: <span>{{ quotation.HIGHDAY }}</span>
-            </p>
-            <p>
-              Lowest price of the day: <span>{{ quotation.LOWDAY }}</span>
-            </p>
-            <p>
-              Last 24 hours variation:
-              <span>{{ quotation.CHANGEPCTHOUR }} %</span>
-            </p>
-            <p>
-              Last actualization: <span>{{ quotation.LASTUPDATE }}</span>
-            </p>
-          </div>
-        </div>
+      <Spinner v-if="loading"/>
+      <Quote
+          v-if="showResult"
+          :quotation="quotation"
+      />
       </div>
     </div>
-  </div>
 </template>
 
 <style scoped></style>
